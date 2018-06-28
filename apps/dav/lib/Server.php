@@ -148,7 +148,11 @@ class Server {
 			if (\OC::$server->getConfig()->getAppValue('dav', 'sendInvitations', 'yes') === 'yes') {
 				$this->server->addPlugin(\OC::$server->query(\OCA\DAV\CalDAV\Schedule\IMipPlugin::class));
 			}
-			$this->server->addPlugin(new \Sabre\CalDAV\Subscriptions\Plugin());
+			$webcalCachingPlugin = new CalDAV\WebcalCaching\Plugin($request);
+			$this->server->addPlugin($webcalCachingPlugin);
+			if (!$webcalCachingPlugin->isCachingEnabledForThisRequest()) {
+				$this->server->addPlugin(new \Sabre\CalDAV\Subscriptions\Plugin());
+			}
 			$this->server->addPlugin(new \Sabre\CalDAV\Notifications\Plugin());
 			$this->server->addPlugin(new DAV\Sharing\Plugin($authBackend, \OC::$server->getRequest()));
 			$this->server->addPlugin(new \OCA\DAV\CalDAV\Publishing\PublishPlugin(
