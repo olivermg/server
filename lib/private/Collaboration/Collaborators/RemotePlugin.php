@@ -69,8 +69,14 @@ class RemotePlugin implements ISearchPlugin {
 				$lowerSearch = strtolower($search);
 				foreach ($cloudIds as $cloudId) {
 					try {
-						list(, $serverUrl) = $this->splitUserRemote($cloudId);
+						list($remoteUser, $serverUrl) = $this->splitUserRemote($cloudId);
 					} catch (\InvalidArgumentException $e) {
+						continue;
+					}
+
+					// TODO: inject
+					$localUser = \OC::$server->getUserManager()->get($remoteUser);
+					if ($localUser !== null && $cloudId === $localUser->getCloudId()) {
 						continue;
 					}
 
