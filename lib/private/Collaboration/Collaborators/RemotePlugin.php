@@ -67,7 +67,7 @@ class RemotePlugin implements ISearchPlugin {
 					$cloudIds = [$cloudIds];
 				}
 				$lowerSearch = strtolower($search);
-				foreach ($cloudIds as $cloudId) {
+				foreach ($cloudIds as $type => $cloudId) {
 					try {
 						list($remoteUser, $serverUrl) = $this->splitUserRemote($cloudId);
 					} catch (\InvalidArgumentException $e) {
@@ -87,6 +87,7 @@ class RemotePlugin implements ISearchPlugin {
 						$result['exact'][] = [
 							'label' => $contact['FN'] . " ($cloudId)",
 							'uuid' => $contact['UID'],
+							'type' => $type,
 							'value' => [
 								'shareType' => Share::SHARE_TYPE_REMOTE,
 								'shareWith' => $cloudId,
@@ -97,6 +98,7 @@ class RemotePlugin implements ISearchPlugin {
 						$result['wide'][] = [
 							'label' => $contact['FN'] . " ($cloudId)",
 							'uuid' => $contact['UID'],
+							'type' => $type,
 							'value' => [
 								'shareType' => Share::SHARE_TYPE_REMOTE,
 								'shareWith' => $cloudId,
