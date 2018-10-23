@@ -41,11 +41,14 @@ class RemotePlugin implements ISearchPlugin {
 	private $cloudIdManager;
 	/** @var IConfig */
 	private $config;
+	/** @var string */
+	private $userId;
 
 	public function __construct(IManager $contactsManager, ICloudIdManager $cloudIdManager, IConfig $config) {
 		$this->contactsManager = $contactsManager;
 		$this->cloudIdManager = $cloudIdManager;
 		$this->config = $config;
+		$this->userId = \OC::$server->getUserSession()->getUser()->getUID();
 
 		$this->shareeEnumeration = $this->config->getAppValue('core', 'shareapi_allow_share_dialog_user_enumeration', 'yes') === 'yes';
 	}
@@ -63,11 +66,17 @@ class RemotePlugin implements ISearchPlugin {
 			}
 			if (isset($contact['CLOUD'])) {
 				$cloudIds = $contact['CLOUD'];
-				if (!is_array($cloudIds)) {
+				if (is_string($cloudIds)) {
 					$cloudIds = [$cloudIds];
 				}
 				$lowerSearch = strtolower($search);
-				foreach ($cloudIds as $type => $cloudId) {
+				foreach ($cloudIds as $cloudId) {
+					$cloudIdType = '';
+					if (\is_array($cloudId)) {
+						$cloudIdData = $cloudId;
+						$cloudId = $cloudIdData['value'];
+						$cloudIdType = $cloudIdData['type'];
+					}
 					try {
 						list($remoteUser, $serverUrl) = $this->splitUserRemote($cloudId);
 					} catch (\InvalidArgumentException $e) {
@@ -87,7 +96,7 @@ class RemotePlugin implements ISearchPlugin {
 						$result['exact'][] = [
 							'label' => $contact['FN'] . " ($cloudId)",
 							'uuid' => $contact['UID'],
-							'type' => $type,
+							'type' => $cloudIdType,
 							'value' => [
 								'shareType' => Share::SHARE_TYPE_REMOTE,
 								'shareWith' => $cloudId,
@@ -98,7 +107,7 @@ class RemotePlugin implements ISearchPlugin {
 						$result['wide'][] = [
 							'label' => $contact['FN'] . " ($cloudId)",
 							'uuid' => $contact['UID'],
-							'type' => $type,
+							'type' => $cloudIdType,
 							'value' => [
 								'shareType' => Share::SHARE_TYPE_REMOTE,
 								'shareWith' => $cloudId,
