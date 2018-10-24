@@ -84,6 +84,7 @@ class ComposerStaticInitDAV
         'OCA\\DAV\\CardDAV\\Plugin' => __DIR__ . '/..' . '/../lib/CardDAV/Plugin.php',
         'OCA\\DAV\\CardDAV\\SyncService' => __DIR__ . '/..' . '/../lib/CardDAV/SyncService.php',
         'OCA\\DAV\\CardDAV\\UserAddressBooks' => __DIR__ . '/..' . '/../lib/CardDAV/UserAddressBooks.php',
+        'OCA\\DAV\\CardDAV\\VCFMultiExportPlugin' => __DIR__ . '/..' . '/../lib/CardDAV/VCFMultiExportPlugin.php',
         'OCA\\DAV\\CardDAV\\Xml\\Groups' => __DIR__ . '/..' . '/../lib/CardDAV/Xml/Groups.php',
         'OCA\\DAV\\Command\\CreateAddressBook' => __DIR__ . '/..' . '/../lib/Command/CreateAddressBook.php',
         'OCA\\DAV\\Command\\CreateCalendar' => __DIR__ . '/..' . '/../lib/Command/CreateCalendar.php',
