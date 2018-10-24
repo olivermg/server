@@ -58,8 +58,6 @@ class VCFMultiExportPlugin extends DAV\ServerPlugin {
 
 		$queryParams = $request->getQueryParameters();
 
-		var_dump($queryParams);
-
 		// check for post data validity
 		if (!array_key_exists('vcards', $queryParams)
 		 || !is_array($queryParams['vcards'])) {
