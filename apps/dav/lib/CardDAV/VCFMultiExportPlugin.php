@@ -44,31 +44,40 @@ class VCFMultiExportPlugin extends DAV\ServerPlugin {
 	 */
 	public function initialize(Server $server) {
 		$this->server = $server;
-		$this->server->on('method:POST', [$this, 'httpPOST'], 90);
+		$this->server->on('method:GET', [$this, 'httpGet'], 90);
 	}
 
 	/**
-	 * Intercepts POST requests on addressbook urls ending with ?export.
+	 * Intercepts GET requests
 	 *
 	 * @param RequestInterface $request
 	 * @param ResponseInterface $response
 	 * @return bool
 	 */
-	public function httpPOST(RequestInterface $request, ResponseInterface $response) {
+	public function httpGet(RequestInterface $request, ResponseInterface $response) {
 
-		$postData = $request->getPostData();
+		$queryParams = $request->getQueryParameters();
+
+		var_dump($queryParams);
 
 		// check for post data validity
-		if (!array_key_exists('vcards', $postData) || !is_array($postData['vcards'])) {
-			return;
+		if (!array_key_exists('vcards', $queryParams)
+		 || !is_array($queryParams['vcards'])) {
+			return true;
 		}
 
 		// user addressbooks home
 		$path = $request->getPath();
+		$paths = $queryParams['vcards'];
+
+		// extract unique addressbooks from all the paths
+		$addressbookIDs = array_unique(array_map(function($path) {
+			return explode('/', $path)[0];
+		}, $paths));
 
 		// valid addressbooks and the requested vcards
 		$addressbooks = [];
-		foreach ($postData['vcards'] as $addressbook => $vcards) {
+		foreach ($addressbookIDs as $addressbook) {
 			$node = $this->server->tree->getNodeForPath("$path/$addressbook/");
 
 			// Checking ACL, if available.
@@ -82,19 +91,18 @@ class VCFMultiExportPlugin extends DAV\ServerPlugin {
 			}
 		}
 
+		// array of vcard paths
+		$absolutePaths = array_map(function ($vcard) use ($path) {
+			return "$path/$vcard";
+		}, $paths);
+
 		$this->server->transactionType = 'vcf-multi-export';
 
-		// array of vcard paths
-		$paths = [];
-		foreach ($addressbooks as $addressbook => $vcards) {
-			// creating array of paths based on the vcard filenames
-			$vcardspaths = array_map(function ($vcard) use ($addressbook, $path) {
-				return "$path/$addressbook/$vcard";
-			}, $vcards);
-			$paths = array_merge($paths, $vcardspaths);
-		}
-
-		$nodes = $this->server->tree->getMultipleNodes($paths);
+		// We do not need to check for other paths
+		// If one of the path is incorrect, it either
+		// 1. would have been thrown if the ab doesn't exists
+		// 2. will be ignored by the getMultipleNodes method
+		$nodes = $this->server->tree->getMultipleNodes($absolutePaths);
 
 		$format = 'text/directory';
 
