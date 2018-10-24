@@ -42,7 +42,7 @@ class VCFMultiExportPlugin extends DAV\ServerPlugin {
 	 * @param Server $server
 	 * @return void
 	 */
-	function initialize(Server $server) {
+	public function initialize(Server $server) {
 		$this->server = $server;
 		$this->server->on('method:POST', [$this, 'httpPOST'], 90);
 	}
@@ -54,15 +54,9 @@ class VCFMultiExportPlugin extends DAV\ServerPlugin {
 	 * @param ResponseInterface $response
 	 * @return bool
 	 */
-	function httpPOST(RequestInterface $request, ResponseInterface $response) {
+	public function httpPOST(RequestInterface $request, ResponseInterface $response) {
 
-		$queryParams = $request->getQueryParameters();
-		$postData    = $request->getPostData();
-
-		// check for ?export param
-		// if (!array_key_exists('export', $queryParams)) {
-		// 	return;
-		// }
+		$postData = $request->getPostData();
 
 		// check for post data validity
 		if (!array_key_exists('vcards', $postData) || !is_array($postData['vcards'])) {
@@ -88,7 +82,7 @@ class VCFMultiExportPlugin extends DAV\ServerPlugin {
 			}
 		}
 
-		$this->server->transactionType = 'get-vcards-multi-export';
+		$this->server->transactionType = 'vcf-multi-export';
 
 		// array of vcard paths
 		$paths = [];
@@ -128,9 +122,7 @@ class VCFMultiExportPlugin extends DAV\ServerPlugin {
 		$response->setBody($output);
 
 		// Returning false to break the event chain
-
 		return false;
-
 	}
 
 	/**
@@ -139,8 +131,7 @@ class VCFMultiExportPlugin extends DAV\ServerPlugin {
 	 * @param array $nodes
 	 * @return string
 	 */
-	function generateVCF(array $nodes) {
-
+	private function generateVCF(array $nodes) {
 		$output = '';
 
 		foreach ($nodes as $node) {
@@ -157,7 +148,6 @@ class VCFMultiExportPlugin extends DAV\ServerPlugin {
 		}
 
 		return $output;
-
 	}
 
 	/**
@@ -168,10 +158,8 @@ class VCFMultiExportPlugin extends DAV\ServerPlugin {
 	 *
 	 * @return string
 	 */
-	function getPluginName() {
-
+	public function getPluginName() {
 		return 'vcf-multi-export';
-
 	}
 
 	/**
@@ -185,8 +173,7 @@ class VCFMultiExportPlugin extends DAV\ServerPlugin {
 	 *
 	 * @return array
 	 */
-	function getPluginInfo() {
-
+	public function getPluginInfo() {
 		return [
 			'name'        => $this->getPluginName(),
 			'description' => 'Adds the ability to export multiple vCard as a single vCard file.'
