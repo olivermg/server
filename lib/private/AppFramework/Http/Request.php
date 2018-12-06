@@ -141,7 +141,7 @@ class Request implements \ArrayAccess, \Countable, IRequest {
 								IConfig $config,
 								CsrfTokenManager $csrfTokenManager = null,
 								string $stream = 'php://input',
-								IIpAddressFactory $ipAddressFactory = null) {
+								IIpAddressFactory $ipAddressFactory) {
 		$this->inputStream = $stream;
 		$this->items['params'] = [];
 		$this->secureRandom = $secureRandom;
@@ -612,20 +612,16 @@ class Request implements \ArrayAccess, \Countable, IRequest {
 	 * @return boolean true if $remoteAddress matches any entry in $trustedProxies, false otherwise
 	 */
 	protected function isTrustedProxy($trustedProxies, $remoteAddress) {
-		if ($this->ipAddressFactory !== null) {
-			$ipAddressRemote = $this->ipAddressFactory->getInstance($remoteAddress);
+		$ipAddressRemote = $this->ipAddressFactory->getInstance($remoteAddress);
 
-			foreach ($trustedProxies as $tp) {
-				$ipAddressProxy = $this->ipAddressFactory->getInstance($tp);
-				if ($ipAddressProxy->containsAddress($ipAddressRemote)) {
-					return true;
-				}
+		foreach ($trustedProxies as $tp) {
+			$ipAddressProxy = $this->ipAddressFactory->getInstance($tp);
+			if ($ipAddressProxy->containsAddress($ipAddressRemote)) {
+				return true;
 			}
-
-			return false;
-		} else {
-			return \in_array($remoteAddress, $trustedProxies);
 		}
+
+		return false;
 	}
 
 	/**
