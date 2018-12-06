@@ -13,9 +13,9 @@
 namespace Test\AppFramework\Http;
 
 use OC\AppFramework\Http\Request;
-use OC\Net\IpAddressFactory;
 use OC\Security\CSRF\CsrfToken;
 use OC\Security\CSRF\CsrfTokenManager;
+use OCP\Net\IIpAddressFactory;
 use OCP\Security\ISecureRandom;
 use OCP\IConfig;
 
@@ -46,7 +46,7 @@ class RequestTest extends \Test\TestCase {
 		$this->config = $this->getMockBuilder(IConfig::class)->getMock();
 		$this->csrfTokenManager = $this->getMockBuilder('\OC\Security\CSRF\CsrfTokenManager')
 			->disableOriginalConstructor()->getMock();
-		$this->ipAddressFactory = new IpAddressFactory();
+		$this->ipAddressFactory = $this->getMockBuilder(IIpAddressFactory::class)->getMock();
 	}
 
 	protected function tearDown() {
@@ -431,6 +431,18 @@ class RequestTest extends \Test\TestCase {
 			->with('trusted_proxies')
 			->will($this->returnValue([]));
 
+		$remoteAddress = $this->getMockBuilder('\OCP\Net\IIpAddress')
+			->disableOriginalConstructor()
+			->getMock();
+		$this->ipAddressFactory
+			->expects($this->once())
+			->method('getInstance')
+			->with('10.0.0.2')
+			->will($this->returnValue($remoteAddress));
+		$remoteAddress
+			->expects($this->never())
+			->method('containsAddress');
+
 		$request = new Request(
 			[
 				'server' => [
@@ -460,6 +472,29 @@ class RequestTest extends \Test\TestCase {
 			->method('getSystemValue')
 			->with('forwarded_for_headers')
 			->will($this->returnValue([]));
+
+		$remoteAddress = $this->getMockBuilder('\OCP\Net\IIpAddress')
+			->disableOriginalConstructor()
+			->getMock();
+		$this->ipAddressFactory
+			->expects($this->at(0))
+			->method('getInstance')
+			->with('10.0.0.2')
+			->will($this->returnValue($remoteAddress));
+
+		$trustedProxy1 = $this->getMockBuilder('\OCP\Net\IIpAddress')
+			->disableOriginalConstructor()
+			->getMock();
+		$this->ipAddressFactory
+			->expects($this->at(1))
+			->method('getInstance')
+			->with('10.0.0.2')
+			->will($this->returnValue($trustedProxy1));
+		$trustedProxy1
+			->expects($this->once())
+			->method('containsAddress')
+			->with($remoteAddress)
+			->will($this->returnValue(true));
 
 		$request = new Request(
 			[
@@ -491,6 +526,29 @@ class RequestTest extends \Test\TestCase {
 			->with('forwarded_for_headers')
 			->will($this->returnValue(['HTTP_X_FORWARDED']));
 
+		$remoteAddress = $this->getMockBuilder('\OCP\Net\IIpAddress')
+			->disableOriginalConstructor()
+			->getMock();
+		$this->ipAddressFactory
+			->expects($this->at(0))
+			->method('getInstance')
+			->with('10.0.0.2')
+			->will($this->returnValue($remoteAddress));
+
+		$trustedProxy1 = $this->getMockBuilder('\OCP\Net\IIpAddress')
+			->disableOriginalConstructor()
+			->getMock();
+		$this->ipAddressFactory
+			->expects($this->at(1))
+			->method('getInstance')
+			->with('10.0.0.2')
+			->will($this->returnValue($trustedProxy1));
+		$trustedProxy1
+			->expects($this->once())
+			->method('containsAddress')
+			->with($remoteAddress)
+			->will($this->returnValue(true));
+
 		$request = new Request(
 			[
 				'server' => [
@@ -509,6 +567,7 @@ class RequestTest extends \Test\TestCase {
 		$this->assertSame('10.4.0.5', $request->getRemoteAddress());
 	}
 
+	/*
 	public function testGetRemoteAddressIPv6WithSingleTrustedRemote() {
 		$this->config
 			->expects($this->at(0))
@@ -716,6 +775,7 @@ class RequestTest extends \Test\TestCase {
 
 		$this->assertSame('2001:db8:85a3:8d3:1319:8a22:370:7348', $request->getRemoteAddress());
 	}
+	 */
 
 	/**
 	 * @return array
@@ -1543,7 +1603,8 @@ class RequestTest extends \Test\TestCase {
 				$this->secureRandom,
 				$this->config,
 				$this->csrfTokenManager,
-				$this->stream
+				$this->stream,
+				$this->ipAddressFactory
 			])
 			->getMock();
 		$request
@@ -1571,7 +1632,8 @@ class RequestTest extends \Test\TestCase {
 				$this->secureRandom,
 				$this->config,
 				$this->csrfTokenManager,
-				$this->stream
+				$this->stream,
+				$this->ipAddressFactory
 			])
 			->getMock();
 		$token = new CsrfToken('AAAHGxsTCTc3BgMQESAcNR0OAR0=:MyTotalSecretShareds');
@@ -1601,7 +1663,8 @@ class RequestTest extends \Test\TestCase {
 				$this->secureRandom,
 				$this->config,
 				$this->csrfTokenManager,
-				$this->stream
+				$this->stream,
+				$this->ipAddressFactory
 			])
 			->getMock();
 		$token = new CsrfToken('AAAHGxsTCTc3BgMQESAcNR0OAR0=:MyTotalSecretShareds');
@@ -1631,7 +1694,8 @@ class RequestTest extends \Test\TestCase {
 				$this->secureRandom,
 				$this->config,
 				$this->csrfTokenManager,
-				$this->stream
+				$this->stream,
+				$this->ipAddressFactory
 			])
 			->getMock();
 		$token = new CsrfToken('AAAHGxsTCTc3BgMQESAcNR0OAR0=:MyTotalSecretShareds');
@@ -1657,7 +1721,8 @@ class RequestTest extends \Test\TestCase {
 				$this->secureRandom,
 				$this->config,
 				$this->csrfTokenManager,
-				$this->stream
+				$this->stream,
+				$this->ipAddressFactory
 			])
 			->getMock();
 		$this->csrfTokenManager
@@ -1681,7 +1746,8 @@ class RequestTest extends \Test\TestCase {
 				$this->secureRandom,
 				$this->config,
 				$this->csrfTokenManager,
-				$this->stream
+				$this->stream,
+				$this->ipAddressFactory
 			])
 			->getMock();
 		$this->csrfTokenManager
@@ -1705,7 +1771,8 @@ class RequestTest extends \Test\TestCase {
 				$this->secureRandom,
 				$this->config,
 				$this->csrfTokenManager,
-				$this->stream
+				$this->stream,
+				$this->ipAddressFactory
 			])
 			->getMock();
 		$this->csrfTokenManager
@@ -1733,7 +1800,8 @@ class RequestTest extends \Test\TestCase {
 				$this->secureRandom,
 				$this->config,
 				$this->csrfTokenManager,
-				$this->stream
+				$this->stream,
+				$this->ipAddressFactory
 			])
 			->getMock();
 		$this->csrfTokenManager
@@ -1761,7 +1829,8 @@ class RequestTest extends \Test\TestCase {
 				$this->secureRandom,
 				$this->config,
 				$this->csrfTokenManager,
-				$this->stream
+				$this->stream,
+				$this->ipAddressFactory
 			])
 			->getMock();
 		$request
@@ -1793,7 +1862,8 @@ class RequestTest extends \Test\TestCase {
 				$this->secureRandom,
 				$this->config,
 				$this->csrfTokenManager,
-				$this->stream
+				$this->stream,
+				$this->ipAddressFactory
 			])
 			->getMock();
 		$request
@@ -1816,7 +1886,8 @@ class RequestTest extends \Test\TestCase {
 				$this->secureRandom,
 				$this->config,
 				$this->csrfTokenManager,
-				$this->stream
+				$this->stream,
+				$this->ipAddressFactory
 			])
 			->getMock();
 		$actual = $request->getCookieParams();
@@ -1841,7 +1912,8 @@ class RequestTest extends \Test\TestCase {
 				$this->secureRandom,
 				$this->config,
 				$this->csrfTokenManager,
-				$this->stream
+				$this->stream,
+				$this->ipAddressFactory
 			])
 			->getMock();
 
@@ -1864,7 +1936,8 @@ class RequestTest extends \Test\TestCase {
 				$this->secureRandom,
 				$this->config,
 				$this->csrfTokenManager,
-				$this->stream
+				$this->stream,
+				$this->ipAddressFactory
 			])
 			->getMock();
 
@@ -1887,7 +1960,8 @@ class RequestTest extends \Test\TestCase {
 				$this->secureRandom,
 				$this->config,
 				$this->csrfTokenManager,
-				$this->stream
+				$this->stream,
+				$this->ipAddressFactory
 			])
 			->getMock();
 
@@ -1910,7 +1984,8 @@ class RequestTest extends \Test\TestCase {
 				$this->secureRandom,
 				$this->config,
 				$this->csrfTokenManager,
-				$this->stream
+				$this->stream,
+				$this->ipAddressFactory
 			])
 			->getMock();
 
@@ -1934,7 +2009,8 @@ class RequestTest extends \Test\TestCase {
 				$this->secureRandom,
 				$this->config,
 				$this->csrfTokenManager,
-				$this->stream
+				$this->stream,
+				$this->ipAddressFactory
 			])
 			->getMock();
 		$this->csrfTokenManager
@@ -1961,7 +2037,8 @@ class RequestTest extends \Test\TestCase {
 				$this->secureRandom,
 				$this->config,
 				$this->csrfTokenManager,
-				$this->stream
+				$this->stream,
+				$this->ipAddressFactory
 			])
 			->getMock();
 
@@ -1985,7 +2062,8 @@ class RequestTest extends \Test\TestCase {
 				$this->secureRandom,
 				$this->config,
 				$this->csrfTokenManager,
-				$this->stream
+				$this->stream,
+				$this->ipAddressFactory
 			])
 			->getMock();
 
@@ -2009,7 +2087,8 @@ class RequestTest extends \Test\TestCase {
 				$this->secureRandom,
 				$this->config,
 				$this->csrfTokenManager,
-				$this->stream
+				$this->stream,
+				$this->ipAddressFactory
 			])
 			->getMock();
 
@@ -2033,7 +2112,8 @@ class RequestTest extends \Test\TestCase {
 				$this->secureRandom,
 				$this->config,
 				$this->csrfTokenManager,
-				$this->stream
+				$this->stream,
+				$this->ipAddressFactory
 			])
 			->getMock();
 
@@ -2058,7 +2138,8 @@ class RequestTest extends \Test\TestCase {
 				$this->secureRandom,
 				$this->config,
 				$this->csrfTokenManager,
-				$this->stream
+				$this->stream,
+				$this->ipAddressFactory
 			])
 			->getMock();
 
@@ -2093,7 +2174,8 @@ class RequestTest extends \Test\TestCase {
 				$this->secureRandom,
 				$this->config,
 				$this->csrfTokenManager,
-				$this->stream
+				$this->stream,
+				$this->ipAddressFactory
 			])
 			->getMock();
 
@@ -2116,7 +2198,8 @@ class RequestTest extends \Test\TestCase {
 				$this->secureRandom,
 				$this->config,
 				$this->csrfTokenManager,
-				$this->stream
+				$this->stream,
+				$this->ipAddressFactory
 			])
 			->getMock();
 
