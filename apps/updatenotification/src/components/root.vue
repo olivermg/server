@@ -37,15 +37,15 @@
 					</ul>
 				</template>
 
-				<p>
-					<a v-if="updaterEnabled" href="#" class="button" @click="clickUpdaterButton">{{ t('updatenotification', 'Open updater') }}</a>
+				<div>
+					<a v-if="updaterEnabled" href="#" class="button primary" @click="clickUpdaterButton">{{ t('updatenotification', 'Open updater') }}</a>
 					<a v-if="downloadLink" :href="downloadLink" class="button" :class="{ hidden: !updaterEnabled }">{{ t('updatenotification', 'Download now') }}</a>
-				</p>
-				<div class="whatsNew" v-if="whatsNew">
-					<div class="toggleWhatsNew">
-						<span v-click-outside="hideMenu" @click="toggleMenu">{{ t('updatenotification', 'What\'s new?') }}</span>
-						<div class="popovermenu" :class="{ 'menu-center': true, open: openedWhatsNew }">
-							<popover-menu :menu="whatsNew" />
+					<div class="whatsNew" v-if="whatsNew">
+						<div class="toggleWhatsNew">
+							<a class="button" v-click-outside="hideMenu" @click="toggleMenu">{{ t('updatenotification', 'What\'s new?') }}</a>
+							<div class="popovermenu" :class="{ 'menu-center': true, open: openedWhatsNew }">
+								<popover-menu :menu="whatsNew" />
+							</div>
 						</div>
 					</div>
 				</div>
@@ -251,34 +251,21 @@
 			clickUpdaterButton: function() {
 				$.ajax({
 					url: OC.generateUrl('/apps/updatenotification/credentials')
-				}).success(function(data) {
-					$.ajax({
-						url: OC.getRootPath()+'/updater/',
-						headers: {
-							'X-Updater-Auth': data
-						},
-						method: 'POST',
-						success: function(data){
-							if(data !== 'false') {
-								var body = $('body');
-								$('head').remove();
-								body.html(data);
+				}).success(function(token) {
+					// create a form to send a proper post request to the updater
+					var form = document.createElement('form');
+					form.setAttribute('method', 'post');
+					form.setAttribute('action', OC.getRootPath() + '/updater/');
 
-								// Eval the script elements in the response
-								var dom = $(data);
-								dom.filter('script').each(function() {
-									eval(this.text || this.textContent || this.innerHTML || '');
-								});
+					var hiddenField = document.createElement('input');
+					hiddenField.setAttribute('type', 'hidden');
+					hiddenField.setAttribute('name', 'updater-secret-input');
+					hiddenField.setAttribute('value', token);
 
-								body.removeAttr('id');
-								body.attr('id', 'body-settings');
-							}
-						},
-						error: function() {
-							OC.Notification.showTemporary(t('updatenotification', 'Could not start updater, please try the manual update'));
-							this.updaterEnabled = false;
-						}.bind(this)
-					});
+					form.appendChild(hiddenField);
+
+					document.body.appendChild(form);
+					form.submit();
 				}.bind(this));
 			},
 			changeReleaseChannel: function() {

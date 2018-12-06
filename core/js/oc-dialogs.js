@@ -239,10 +239,10 @@ var OCdialogs = {
 				multiselect = false;
 			}
 
-			// No grid for IE! 
+			// No grid for IE!
 			if (OC.Util.isIE()) {
 				self.$filePicker.find('#picker-view-toggle').remove();
-				self.$filePicker.find('#filestable').removeClass('view-grid');
+				self.$filePicker.find('#picker-filestable').removeClass('view-grid');
 			}
 
 			$('body').append(self.$filePicker);
@@ -808,7 +808,7 @@ var OCdialogs = {
 	_getGridSettings: function() {
 		var self = this;
 		$.get(OC.generateUrl('/apps/files/api/v1/showgridview'), function(response) {
-			self.$showGridView.checked = response.gridview;
+			self.$showGridView.get(0).checked = response.gridview;
 			self.$showGridView.next('#picker-view-toggle')
 				.removeClass('icon-toggle-filelist icon-toggle-pictures')
 				.addClass(response.gridview ? 'icon-toggle-filelist' : 'icon-toggle-pictures')
@@ -826,7 +826,6 @@ var OCdialogs = {
 		this.$showGridView.next('#picker-view-toggle')
 			.removeClass('icon-toggle-filelist icon-toggle-pictures')
 			.addClass(show ? 'icon-toggle-filelist' : 'icon-toggle-pictures')
-			
 		$('.list-container').toggleClass('view-grid', show);
 	},
 	_getFilePickerTemplate: function() {

@@ -13,9 +13,9 @@
   "dependencies": {
     "@babel/polyfill": "^7.0.0",
     "lodash": "^4.17.11",
-    "nextcloud-axios": "^0.1.2",
-    "nextcloud-password-confirmation": "^0.4.0",
-    "nextcloud-vue": "^0.3.1",
+    "nextcloud-axios": "^0.1.3",
+    "nextcloud-password-confirmation": "^0.4.1",
+    "nextcloud-vue": "^0.4.6",
     "v-tooltip": "^2.0.0-rc.33",
     "vue": "^2.5.17",
     "vue-click-outside": "^1.0.7",
@@ -31,9 +31,9 @@
     "ie >= 11"
   ],
   "devDependencies": {
-    "@babel/core": "^7.1.6",
-    "@babel/plugin-syntax-dynamic-import": "^7.0.0",
-    "@babel/preset-env": "^7.1.6",
+    "@babel/core": "^7.2.0",
+    "@babel/plugin-syntax-dynamic-import": "^7.2.0",
+    "@babel/preset-env": "^7.2.0",
     "babel-loader": "^8.0.4",
     "css-loader": "^1.0.1",
     "file-loader": "^1.1.11",
@@ -41,7 +41,7 @@
     "sass-loader": "^7.1.0",
     "vue-loader": "^15.4.2",
     "vue-template-compiler": "^2.5.17",
-    "webpack": "^4.26.1",
+    "webpack": "^4.27.1",
     "webpack-cli": "^3.1.2",
     "webpack-merge": "^4.1.4"
   }
